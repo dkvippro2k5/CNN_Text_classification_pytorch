@@ -2,27 +2,27 @@
 
 This repository contains an implementation of Kim's [Convolutional Neural Networks for Sentence Classification](https://arxiv.org/abs/1408.5882) in PyTorch, customized and optimized for Vietnamese Text Classification.
 
-## 🚀 Updates & Improvements
+## Updates & Improvements
 - **Vietnamese Support**: Integrated `underthesea` for accurate Vietnamese word tokenization.
 - **Modernized PyTorch**: Refactored the legacy PyTorch code (removing deprecated `.data[0]`, `Variable`, `size_average` etc.) to run natively on modern PyTorch versions.
 - **Stable Training Pipeline**: Fixed dimension mismatch bugs (batch sizes) and improved the `torchtext` dataset loading mechanism (pinned to `torchtext==0.6.0` for stability).
 - **Custom Dataset Loading**: Supports loading custom `.csv` datasets seamlessly.
 
-## 📦 Requirements
+## Requirements
 To install the required dependencies, run:
 ```bash
 pip install -r requirements.txt
 ```
 
-## 📊 Dataset & Results
+## Dataset & Results
 The model was trained on a Vietnamese classification dataset containing 5 distinct classes: `emotional`, `recruitment`, `sales`, `stu_edu`, `news`, `label_name`.
 
 **Training Results:**
 - **Best Validation Accuracy**: **~93.25%** (achieved around Epoch 9)
-- **Parameters**: ~6.8M trainable parameters.
+- **Parameters**: ~6.8M trainable parameters.`
 - **Training Time**: ~33 seconds per epoch.
 
-## 💻 Usage
+## Usage
 
 ### 1. Training
 To train the model from scratch, simply run:
@@ -37,7 +37,7 @@ To run inference on a custom Vietnamese sentence:
 python main.py -predict "Điện thoại này dùng rất mượt và chụp ảnh đẹp" -snapshot "./snapshot/2026-06-11_10-54-44/best_steps_540.pt"
 ```
 
-## 📂 Project Structure
+## Project Structure
 - `clean_data.py`: Script to preprocess and remove duplicates from the raw CSV data.
 - `mydatasets.py`: Custom `torchtext` TabularDataset loader.
 - `model.py`: The 1D CNN model architecture.
@@ -45,5 +45,5 @@ python main.py -predict "Điện thoại này dùng rất mượt và chụp ả
 - `main.py`: Entry point for training and CLI arguments.
 - `check.py`: Sanity check utility for Tensor dimensions.
 
-## 📚 Reference
+## Reference
 * [Convolutional Neural Networks for Sentence Classification](https://arxiv.org/abs/1408.5882)
