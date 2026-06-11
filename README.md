@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ```
 
 ## 📊 Dataset & Results
-The model was trained on a Vietnamese classification dataset containing 7 distinct classes: `emotional`, `recruitment`, `sales`, `stu_edu`, `news`, `label_name`.
+The model was trained on a Vietnamese classification dataset containing 5 distinct classes: `emotional`, `recruitment`, `sales`, `stu_edu`, `news`, `label_name`.
 
 **Training Results:**
 - **Best Validation Accuracy**: **~93.25%** (achieved around Epoch 9)
