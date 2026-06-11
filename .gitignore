@@ -102,3 +102,8 @@ trees
 
 # pycharm
 .idea
+
+# Added by AI
+*.bin
+snapshot/
+*.tar.gz

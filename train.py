@@ -3,6 +3,7 @@ import sys
 import torch
 import torch.autograd as autograd
 import torch.nn.functional as F
+import time
 
 
 def train(train_iter, dev_iter, model, args):
@@ -11,14 +12,17 @@ def train(train_iter, dev_iter, model, args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
+    start_training_time = time.time()
     steps = 0
     best_acc = 0
     last_step = 0
     for epoch in range(1, args.epochs+1):
+        epoch_start_time = time.time()
+
         for batch in train_iter:
             model.train()
             feature, target = batch.text, batch.label
-            feature.t_(), target.sub_(1)  # batch first, index align
+            target.sub_(1)  # index align
             if args.cuda:
                 feature, target = feature.cuda(), target.cuda()
 
@@ -30,7 +34,7 @@ def train(train_iter, dev_iter, model, args):
 
             steps += 1
             if steps % args.log_interval == 0:
-                corrects = (torch.max(logit, 1)[1].view(target.size()).data == target.data).sum()
+                corrects = (torch.max(logit, 1)[1].view(target.size()) == target).sum()
                 accuracy = 100.0 * corrects/batch.batch_size
                 sys.stdout.write(
                     '\rBatch[{}] - loss: {:.6f}  acc: {:.4f}%({}/{})'.format(steps, 
@@ -51,22 +55,36 @@ def train(train_iter, dev_iter, model, args):
             elif steps % args.save_interval == 0:
                 save(model, args.save_dir, 'snapshot', steps)
 
+        # --- TÍNH THỜI GIAN KẾT THÚC EPOCH ---
+        epoch_duration = time.time() - epoch_start_time
+        print(f'\nEnd of Epoch {epoch} | Time: {epoch_duration:.2f}s')
+
+    # --- TÍNH TỔNG KẾT THỜI GIAN ---
+    total_training_time = time.time() - start_training_time
+    avg_time_per_epoch = total_training_time / args.epochs
+
+    print('\n' + '='*40)
+    print('TRAINING STATISTICS:')
+    print(f'Total Training Time: {total_training_time:.2f} seconds ({total_training_time/60:.2f} minutes)')
+    print(f'Average Time per Epoch: {avg_time_per_epoch:.2f} seconds')
+    print('='*40 + '\n')
+
 
 def eval(data_iter, model, args):
     model.eval()
     corrects, avg_loss = 0, 0
     for batch in data_iter:
         feature, target = batch.text, batch.label
-        feature.t_(), target.sub_(1)  # batch first, index align
+        target.sub_(1)  # index align
         if args.cuda:
             feature, target = feature.cuda(), target.cuda()
 
         logit = model(feature)
-        loss = F.cross_entropy(logit, target, size_average=False)
+        loss = F.cross_entropy(logit, target, reduction='sum')
 
         avg_loss += loss.item()
         corrects += (torch.max(logit, 1)
-                     [1].view(target.size()).data == target.data).sum()
+                     [1].view(target.size()) == target).sum()
 
     size = len(data_iter.dataset)
     avg_loss /= size
@@ -78,20 +96,20 @@ def eval(data_iter, model, args):
     return accuracy
 
 
-def predict(text, model, text_field, label_feild, cuda_flag):
+def predict(text, model, text_field, label_field, cuda_flag):
     assert isinstance(text, str)
     model.eval()
     # text = text_field.tokenize(text)
     text = text_field.preprocess(text)
     text = [[text_field.vocab.stoi[x] for x in text]]
     x = torch.tensor(text)
-    x = autograd.Variable(x)
     if cuda_flag:
         x = x.cuda()
     print(x)
-    output = model(x)
+    with torch.no_grad():
+        output = model(x)
     _, predicted = torch.max(output, 1)
-    return label_feild.vocab.itos[predicted.item()+1]
+    return label_field.vocab.itos[predicted.item()+1]
 
 
 def save(model, save_dir, save_prefix, steps):
